@@ -2,16 +2,11 @@ from keras.models import Model
 from keras.layers import Input, Dense, Flatten, Reshape
 from keras.layers.advanced_activations import LeakyReLU
 from keras.layers.convolutional import Conv2D
-from keras.utils import multi_gpu_model
-from keras.optimizers import Adam
 
-from pixel_shuffler import PixelShuffler
-
-optimizer = Adam( lr=5e-5, beta_1=0.5, beta_2=0.999 )
+from model.pixel_shuffler import PixelShuffler
 
 IMAGE_SHAPE = (64,64,3)
 ENCODER_DIM = 1024
-NUM_GPU = 4
 
 def conv( filters ):
     def block(x):
@@ -58,8 +53,3 @@ x = Input( shape=IMAGE_SHAPE )
 
 autoencoder_A = Model( x, decoder_A( encoder(x) ) )
 autoencoder_B = Model( x, decoder_B( encoder(x) ) )
-if NUM_GPU > 0:
-    autoencoder_A = multi_gpu_model(autoencoder_A, gpus=4)
-    autoencoder_B = multi_gpu_model(autoencoder_B, gpus=4)
-autoencoder_A.compile( optimizer=optimizer, loss='mean_absolute_error' )
-autoencoder_B.compile( optimizer=optimizer, loss='mean_absolute_error' )

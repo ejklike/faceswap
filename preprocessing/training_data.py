@@ -1,6 +1,6 @@
 import numpy
-from image_augmentation import random_transform
-from image_augmentation import random_warp
+from preprocessing.image_augmentation import random_transform
+from preprocessing.image_augmentation import random_warp
 
 random_transform_args = {
     'rotation_range': 10,
