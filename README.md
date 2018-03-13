@@ -21,11 +21,8 @@ tqdm
 
 ### Download celebA dataset
 
-```python
-import celeba_helper as helper
-
-data_dir = '../celebA' # as you want
-helper.download_extract('celeba', data_dir)
+```bash
+$ python download.py celebA
 ```
 
 ### Train model
