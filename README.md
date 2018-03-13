@@ -34,4 +34,4 @@ $ python train.py
 
 ## References
 - [deepfakes](https://github.com/deepfakes/faceswap): faceswap model code
-- [face_gen](https://github.com/bestkao/face_gen): celebA dataset download helper
+- [data downloader](https://github.com/carpedm20/DCGAN-tensorflow/blob/master/download.py): for celebA dataset
