@@ -19,6 +19,21 @@ tqdm
 
 ## How to
 
+### Download celebA dataset
+
+```python
+import celeba_helper as helper
+
+data_dir = '../celebA' # as you want
+helper.download_extract('celeba', data_dir)
+```
+
+### Train model
+
+```bash
+$ python train.py
+```
+
 
 ## References
 - [deepfakes](https://github.com/deepfakes/faceswap): faceswap model code
