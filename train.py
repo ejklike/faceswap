@@ -35,6 +35,11 @@ if __name__ == '__main__':
                         dest="save_interval",
                         default=100,
                         help="Sets the number of iterations before saving the model.")
+    parser.add_argument('-si', '--save-image',
+                        action="store_true",
+                        dest="save_image",
+                        default=False,
+                        help="Sets save_image option to save current model results")
     parser.add_argument('-t', '--trainer',
                         type=str,
                         choices=PluginLoader.get_available_models(),
@@ -93,7 +98,7 @@ if __name__ == '__main__':
 
         save_iteration = epoch % args.save_interval == 0
 
-        trainer.train_one_step(epoch)
+        trainer.train_one_step(epoch, args.save_image)
 
         if save_iteration:
             model.save_weights()

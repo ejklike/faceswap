@@ -16,7 +16,7 @@ class AutoEncoder(object):
         self.initModel()
 
     def load(self, swapped):
-        (face_A,face_B) = (decoder_AH5, decoder_BH5) if not swapped else (decoder_BH5, decoder_AH5)
+        (face_A, face_B) = (decoder_AH5, decoder_BH5) if not swapped else (decoder_BH5, decoder_AH5)
 
         try:
             self.encoder.load_weights(str(self.model_dir / encoderH5))
