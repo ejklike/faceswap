@@ -96,5 +96,5 @@ class Model(AutoEncoder):
         figure = stack_images( figure )
 
         figure = numpy.clip( figure * 255, 0, 255 ).astype('uint8')
-        cv2.imwrite(os.path.join(self.model_dir, str(epoch) + '.png'), figure)
+        cv2.imwrite(str(self.model_dir / '{}.png'.format(epoch)), figure)
         print('saved model images')
