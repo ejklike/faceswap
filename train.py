@@ -1,144 +1,103 @@
-import os
 import argparse
-import cv2
-import numpy
 
-from keras.optimizers import Adam
-from keras.utils import multi_gpu_model
-
-from utils import get_image_paths, load_images, stack_images
-from preprocessing.training_data import get_training_data
-
-from model.basic import autoencoder_A
-from model.basic import autoencoder_B
-from model.basic import encoder, decoder_A, decoder_B
+from plugins.loader import PluginLoader
+from lib.utils import get_image_paths, get_folder
 
 
-ENCODER_FNAME = None
-DECODER_A_FNAME = None
-DECODER_B_FNAME = None
-
-
-def maybe_exist(dir_name):
-    if not os.path.exists(dir_name):
-        os.makedirs(dir_name)
-        print('make directory:', dir_name)
-
-
-def get_images(input_A_dir, input_B_dir):
-    images_A = get_image_paths(input_A_dir)
-    images_B = get_image_paths(input_B_dir)
-
-    images_A = load_images( images_A ) / 255.0
-    images_B = load_images( images_B ) / 255.0
-
-    images_A += images_B.mean( axis=(0,1,2) ) - images_A.mean( axis=(0,1,2) )
-    return images_A, images_B
-
-
-def save_model_weights():
-    encoder  .save_weights(ENCODER_FNAME)
-    decoder_A.save_weights(DECODER_A_FNAME)
-    decoder_B.save_weights(DECODER_B_FNAME)
-    print(" ...save model weights")
-
-
-def save_model_images(target_A, target_B):
-    test_A = target_A[0:14]
-    test_B = target_B[0:14]
-
-    figure_A = numpy.stack([
-        test_A,
-        autoencoder_A.predict( test_A ),
-        autoencoder_B.predict( test_A ),
-        ], axis=1 )
-    figure_B = numpy.stack([
-        test_B,
-        autoencoder_B.predict( test_B ),
-        autoencoder_A.predict( test_B ),
-        ], axis=1 )
-
-    figure = numpy.concatenate( [ figure_A, figure_B ], axis=0 )
-    figure = figure.reshape( (4,7) + figure.shape[1:] )
-    figure = stack_images( figure )
-
-    figure = numpy.clip( figure * 255, 0, 255 ).astype('uint8')
-    cv2.imwrite(os.path.join(args.output_dir, str(epoch) + '.png'), figure)
-
+def set_tf_allow_growth(self):
+    import tensorflow as tf
+    from keras.backend.tensorflow_backend import set_session
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    config.gpu_options.visible_device_list = "0"
+    set_session(tf.Session(config=config))
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    # TODO: swap A and B ==> from arbitrary to target
+    parser = argparse.ArgumentParser(description='train swap model between A and B')
     parser.add_argument('-A', '--input-A',
                         dest="input_A",
-                        default="../face-data/no",
+                        default="data_A",
                         help="Input directory. A directory containing training images for face A.\
                             Defaults to 'input'")
     parser.add_argument('-B', '--input-B',
                         dest="input_B",
-                        default="../face-data/kim",
+                        default="data_B",
                         help="Input directory. A directory containing training images for face B.\
                             Defaults to 'input'")
     parser.add_argument('-m', '--model-dir',
                         dest="model_dir",
-                        default="../face-model/tmp",
-                        help="Model directory. This is where the training data will be stored.")
-    parser.add_argument('-o', '--output-dir',
-                        dest="output_dir",
-                        default="../face-output/tmp",
-                        help="Output directory. This is where the visualization images will be stored.")
-    parser.add_argument('-b', '--batch-size',
-                        type=int, 
-                        default=64)
-    parser.add_argument('-p', '--period',
-                        type=int, 
-                        default=100)
-    parser.add_argument('-g', '--num_gpu',
-                        type=int, 
-                        default=0)
-    parser.add_argument('-l', '--learning_rate',
-                        type=float, 
-                        default=5e-5)
+                        default="results/model",
+                        help="Model directory. This is where the training data will \
+                            be stored. Defaults to 'model'")
+    parser.add_argument('-s', '--save-interval',
+                        type=int,
+                        dest="save_interval",
+                        default=100,
+                        help="Sets the number of iterations before saving the model.")
+    parser.add_argument('-t', '--trainer',
+                        type=str,
+                        choices=PluginLoader.get_available_models(),
+                        default=PluginLoader.get_default_model(),
+                        help="Select which trainer to use.")
+    parser.add_argument('-pl', '--use-perceptual-loss',
+                        action="store_true",
+                        dest="perceptual_loss",
+                        default=False,
+                        help="Use perceptual loss while training")
+    parser.add_argument('-bs', '--batch-size',
+                        type=int,
+                        default=64,
+                        help="Batch size, as a power of 2 (64, 128, 256, etc)")
+    parser.add_argument('-ag', '--allow-growth',
+                        action="store_true",
+                        dest="allow_growth",
+                        default=False,
+                        help="Sets allow_growth option of Tensorflow to spare memory on some configs")
+    parser.add_argument('-ep', '--epochs',
+                        type=int,
+                        default=1000000,
+                        help="Length of training in epochs.")
+    parser.add_argument('-g', '--gpus',
+                        type=int,
+                        default=1,
+                        help="Number of GPUs to use for training")
 
     args = parser.parse_args()
 
-    # Get model and output paths
-    maybe_exist(args.model_dir)
-    maybe_exist(args.output_dir)
-    ENCODER_FNAME = os.path.join(args.model_dir, "encoder.h5")
-    DECODER_A_FNAME = os.path.join(args.model_dir, "decoder_A.h5")
-    DECODER_B_FNAME = os.path.join(args.model_dir, "decoder_B.h5")
+    print("Model A Directory: {}".format(args.input_A))
+    print("Model B Directory: {}".format(args.input_B))
+    print("Training result directory: {}".format(args.model_dir))
+    print('')
 
-    # Load model
-    if args.num_gpu > 0:
-        autoencoder_A = multi_gpu_model(autoencoder_A, gpus=args.num_gpu)
-        autoencoder_B = multi_gpu_model(autoencoder_B, gpus=args.num_gpu)
-    optimizer = Adam( lr=args.learning_rate, beta_1=0.5, beta_2=0.999 )
-    autoencoder_A.compile( optimizer=optimizer, loss='mean_absolute_error' )
-    autoencoder_B.compile( optimizer=optimizer, loss='mean_absolute_error' )
+    if args.allow_growth:
+        set_tf_allow_growth()
 
-    # Try to load prev. weights
-    try:
-        encoder  .load_weights(ENCODER_FNAME)
-        decoder_A.load_weights(DECODER_A_FNAME)
-        decoder_B.load_weights(DECODER_B_FNAME)
-        print('loading weight complete')
-    except:
-        pass
+    print('Loading data, this may take a while...')
+    images_A = get_image_paths(args.input_A)
+    images_B = get_image_paths(args.input_B)
+    print('')
 
-    print("Start training...")
+    # this is so that you can enter case insensitive values for trainer
+    model = PluginLoader.get_model(args.trainer)(get_folder(args.model_dir), args.gpus)
+    model.load(swapped=False)
+    print('')
 
-    # Load image
-    images_A, images_B = get_images(args.input_A, args.input_B)
+    trainer = PluginLoader.get_trainer(args.trainer)
+    trainer = trainer(model, images_A, images_B, args.batch_size, args.perceptual_loss)
+    print('')
 
-    # Training
-    for epoch in range(1000000):
-        warped_A, target_A = get_training_data( images_A, args.batch_size )
-        warped_B, target_B = get_training_data( images_B, args.batch_size )
+    print('Starting training!!!')
 
-        loss_A = autoencoder_A.train_on_batch( warped_A, target_A )
-        loss_B = autoencoder_B.train_on_batch( warped_B, target_B )
-        print('\r', epoch, loss_A, loss_B, end='', flush=True)
+    for epoch in range(args.epochs):
 
-        if epoch % args.period == 0:
-            save_model_weights()
-            save_model_images(target_A, target_B)
+        save_iteration = epoch % args.save_interval == 0
+
+        trainer.train_one_step(epoch)
+
+        if save_iteration:
+            model.save_weights()
+
+        if stop:
+            model.save_weights()
+            exit()
