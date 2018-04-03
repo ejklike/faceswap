@@ -12,8 +12,9 @@ from lib.pixel_shuffler import PixelShuffler
 from keras.utils import multi_gpu_model
 
 # for saving images
-import numpy
+import os
 import cv2
+import numpy
 from lib.training_data import stack_images
 
 IMAGE_SHAPE = (64, 64, 3)
