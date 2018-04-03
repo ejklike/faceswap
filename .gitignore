@@ -1,3 +1,8 @@
 .vscode
 .DS_Store
 __pycache__
+
+data_A
+data_B
+trash
+results

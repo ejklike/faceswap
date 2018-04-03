@@ -6,6 +6,11 @@ Downloads the following:
 - Celeb-A dataset
 - LSUN dataset
 - MNIST dataset
+---
+HowTo:
+```
+$ python download.py celebA
+```
 """
 
 from __future__ import print_function
