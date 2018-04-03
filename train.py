@@ -97,7 +97,3 @@ if __name__ == '__main__':
 
         if save_iteration:
             model.save_weights()
-
-        if stop:
-            model.save_weights()
-            exit()
