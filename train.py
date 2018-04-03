@@ -97,8 +97,9 @@ if __name__ == '__main__':
     for epoch in range(args.epochs):
 
         save_iteration = epoch % args.save_interval == 0
+        save_image = args.save_image and save_iteration
 
-        trainer.train_one_step(epoch, args.save_image)
+        trainer.train_one_step(epoch, save_image)
 
         if save_iteration:
             model.save_weights()
