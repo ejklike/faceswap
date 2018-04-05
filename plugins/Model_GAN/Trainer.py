@@ -216,9 +216,9 @@ class Trainer():
     def show_sample(self, epoch):
         _, wA, tA = next(self.train_batchA)
         _, wB, tB = next(self.train_batchB)
-        cv2.imwrite(str(self.model_dir / 'raw_{}.jpg'.format(epoch)), self.showG(tA, tB, self.path_A, self.path_B))
-        cv2.imwrite(str(self.model_dir / 'masked_{}.jpg'.format(epoch)), self.showG(tA, tB, self.path_bgr_A, self.path_bgr_B))
-        cv2.imwrite(str(self.model_dir / 'mask_{}.jpg'.format(epoch)), self.showG_mask(tA, tB, self.path_mask_A, self.path_mask_B))
+        cv2.imwrite(str(self.model.model_dir / 'raw_{}.jpg'.format(epoch)), self.showG(tA, tB, self.path_A, self.path_B))
+        cv2.imwrite(str(self.model.model_dir / 'masked_{}.jpg'.format(epoch)), self.showG(tA, tB, self.path_bgr_A, self.path_bgr_B))
+        cv2.imwrite(str(self.model.model_dir / 'mask_{}.jpg'.format(epoch)), self.showG_mask(tA, tB, self.path_mask_A, self.path_mask_B))
         # Reset the averages
         self.errDA_sum = self.errDB_sum = self.errGA_sum = self.errGB_sum = 0
         self.avg_counter = 0
