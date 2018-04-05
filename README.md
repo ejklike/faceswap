@@ -72,10 +72,62 @@ optional arguments:
   -g GPUS, --gpus GPUS  Number of GPUs to use for training
 ```
 
-3\. TODO: 원하는 사진을 입력하여 faceswap 결과를 살펴본다.
+3\. 원하는 사진을 입력하여 faceswap 결과를 살펴본다.
 
 ```
 python convert.py
+```
+
+usage statement
+
+```
+usage: convert.py [-h] [-i INPUT_DIR] [-o OUTPUT_DIR] [-m MODEL_DIR]
+                  [-t {AE,GAN}] [-tg TARGET] [-c {Masked,Adjust}]
+                  [-D {hog,cnn}] [-b BLUR_SIZE] [-S]
+                  [-M {rect,facehull,facehullandrect}]
+                  [-e EROSION_KERNEL_SIZE] [-mh] [-sm] [-aca] [-g GPUS]
+
+Convert a source image to a new one with the face swapped
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INPUT_DIR, --input-dir INPUT_DIR
+                        Input directory. A directory containing the files you
+                        wish to process. Defaults to 'input'
+  -o OUTPUT_DIR, --output-dir OUTPUT_DIR
+                        Output directory. This is where the converted files
+                        will be stored. Defaults to 'output'
+  -m MODEL_DIR, --model-dir MODEL_DIR
+                        Model directory. A directory containing the trained
+                        model you wish to process. Defaults to
+                        './results/model/'
+  -t {AE}, --trainer {AE}
+                        Select the trainer that was used to create the model.
+  -tg TARGET, --target TARGET
+                        Select target. A or B (Default).
+  -c {Masked,Adjust}, --converter {Masked,Adjust}
+                        Converter to use.
+  -D {hog,cnn}, --detector {hog,cnn}
+                        Detector to use. 'cnn' detects much more angles but
+                        will be much more resource intensive and may fail on
+                        large files.
+  -b BLUR_SIZE, --blur-size BLUR_SIZE
+                        Blur size. (Masked converter only)
+  -S, --seamless        Use cv2's seamless clone. (Masked converter only)
+  -M {rect,facehull,facehullandrect}, --mask-type {rect,facehull,facehullandrect}
+                        Mask to use to replace faces. (Masked converter only)
+  -e EROSION_KERNEL_SIZE, --erosion-kernel-size EROSION_KERNEL_SIZE
+                        Erosion kernel size. (Masked converter only). Positive
+                        values apply erosion which reduces the edge of the
+                        swapped face. Negative values apply dilation which
+                        allows the swapped face to cover more space.
+  -mh, --match-histgoram
+                        Use histogram matching. (Masked converter only)
+  -sm, --smooth-mask    Smooth mask (Adjust converter only)
+  -aca, --avg-color-adjust
+                        Average color adjust. (Adjust converter only)
+  -g GPUS, --gpus GPUS  Number of GPUs to use for conversion
+
 ```
 
 ## References
