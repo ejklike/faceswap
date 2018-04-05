@@ -27,3 +27,7 @@ class PluginLoader(object):
     def get_default_model():
         models = PluginLoader.get_available_models()
         return 'AE' if 'AE' in models else models[0]
+
+    @staticmethod
+    def get_converter(name):
+        return PluginLoader._import("Convert", "Convert_{0}".format(name))
