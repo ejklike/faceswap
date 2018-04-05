@@ -49,7 +49,7 @@ if __name__ == '__main__':
                         action="store_true",
                         dest="perceptual_loss",
                         default=False,
-                        help="Use perceptual loss while training")
+                        help="Use perceptual loss while training (GAN only)")
     parser.add_argument('-bs', '--batch-size',
                         type=int,
                         default=64,
@@ -70,8 +70,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    print("Model A Directory: {}".format(args.input_A))
-    print("Model B Directory: {}".format(args.input_B))
+    print("Data A Directory: {}".format(args.input_A))
+    print("Data B Directory: {}".format(args.input_B))
     print("Training result directory: {}".format(args.model_dir))
     print('')
 

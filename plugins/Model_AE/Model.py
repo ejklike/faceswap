@@ -35,8 +35,8 @@ class Model(AutoEncoder):
         self.autoencoder_A.compile(optimizer=optimizer, loss='mean_absolute_error')
         self.autoencoder_B.compile(optimizer=optimizer, loss='mean_absolute_error')
 
-    def converter(self, swap):
-        autoencoder = self.autoencoder_B if not swap else self.autoencoder_A
+    def converter(self, target='B'):
+        autoencoder = self.autoencoder_B if target == 'B' else self.autoencoder_A
         return lambda img: autoencoder.predict(img)
 
     def conv(self, filters):
