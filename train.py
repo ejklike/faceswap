@@ -85,7 +85,7 @@ if __name__ == '__main__':
 
     # this is so that you can enter case insensitive values for trainer
     model = PluginLoader.get_model(args.trainer)(get_folder(args.model_dir), args.gpus)
-    model.load(swapped=False)
+    model.load()
     print('')
 
     trainer = PluginLoader.get_trainer(args.trainer)
