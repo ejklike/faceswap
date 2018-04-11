@@ -34,7 +34,8 @@ class TrainingDataGenerator():
             yield epoch, rtn[:,0,:,:,:], rtn[:,1,:,:,:]       
 
     def color_adjust(self, img):
-        return img / 255.0
+        # return img / 255.0
+        return img / 255.0 * 2 - 1
     
     def read_image(self, fn):
         try:
@@ -63,7 +64,7 @@ class TrainingDataGenerator():
         return result
 
     # get pair of random warped images from aligned face image
-    def random_warp(self, image, coverage, scale = 5, zoom = 1):
+    def random_warp(self, image, coverage, scale=5, zoom=1):
         assert image.shape == (256, 256, 3)
         range_ = numpy.linspace(128 - coverage//2, 128 + coverage//2, 5)
         mapx = numpy.broadcast_to(range_, (5, 5))

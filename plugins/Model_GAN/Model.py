@@ -9,7 +9,6 @@ from keras.applications import *
 from keras.optimizers import Adam
 
 from lib.pixel_shuffler import PixelShuffler
-from .instance_normalization import InstanceNormalization
 
 from keras.utils import multi_gpu_model
 
@@ -18,17 +17,7 @@ netGBH5 = 'netGB_GAN.h5'
 netDAH5 = 'netDA_GAN.h5'
 netDBH5 = 'netDB_GAN.h5'
 
-def __conv_init(a):
-    print("conv_init", a)
-    k = RandomNormal(0, 0.02)(a) # for convolution kernel
-    k.conv_weight = True
-    return k
-
-def inst_norm():
-    return InstanceNormalization()
-
 conv_init = RandomNormal(0, 0.02)
-gamma_init = RandomNormal(1., 0.02) # for batch normalization
 
 class GANModel():
     img_size = 64
@@ -37,12 +26,11 @@ class GANModel():
     encoded_dim = 1024
     nc_in = 3 # number of input channels of generators
     nc_D_inp = 6 # number of input channels of discriminators
+    optimizer = Adam(1e-4, 0.5)
 
     def __init__(self, model_dir, gpus):
         self.model_dir = model_dir
         self.gpus = gpus
-
-        optimizer = Adam(1e-4, 0.5)
 
         # Build and compile the discriminator
         self.netDA, self.netDB = self.build_discriminator()
@@ -80,7 +68,7 @@ class GANModel():
             return block
 
         def Encoder(nc_in=3, input_size=64):
-            inp = Input(shape=(input_size, input_size, nc_in))
+            inp = Input(shape=self.img_shape)
             x = Conv2D(64, kernel_size=5, kernel_initializer=conv_init, use_bias=False, padding="same")(inp)
             x = conv_block(x,128)
             x = conv_block(x,256)
@@ -110,23 +98,20 @@ class GANModel():
         decoder_A = Decoder_ps()
         decoder_B = Decoder_ps()
         x = Input(shape=self.img_shape)
-        netGA = Model(x, decoder_A(encoder(x)))
-        netGB = Model(x, decoder_B(encoder(x)))
-
-        self.netGA_sm = netGA
-        self.netGB_sm = netGB
+        self.netGA = Model(x, decoder_A(encoder(x)))
+        self.netGB = Model(x, decoder_B(encoder(x)))
 
         try:
-            netGA.load_weights(str(self.model_dir / netGAH5))
-            netGB.load_weights(str(self.model_dir / netGBH5))
+            self.netGA.load_weights(str(self.model_dir / netGAH5))
+            self.netGB.load_weights(str(self.model_dir / netGBH5))
             print ("Generator models loaded.")
         except:
             print ("Generator weights files not found.")
             pass
 
         if self.gpus > 1:
-            netGA = multi_gpu_model( self.netGA_sm , self.gpus)
-            netGB = multi_gpu_model( self.netGB_sm , self.gpus)
+            self.netGA = multi_gpu_model( self.netGA, self.gpus)
+            self.netGB = multi_gpu_model( self.netGB, self.gpus)
 
         return netGA, netGB
 
@@ -164,35 +149,31 @@ class GANModel():
         return True
 
     def save_weights(self):
-        if self.gpus > 1:
-            self.netGA_sm.save_weights(str(self.model_dir / netGAH5))
-            self.netGB_sm.save_weights(str(self.model_dir / netGBH5))
-        else:
-            self.netGA.save_weights(str(self.model_dir / netGAH5))
-            self.netGB.save_weights(str(self.model_dir / netGBH5))
+        self.netGA.save_weights(str(self.model_dir / netGAH5))
+        self.netGB.save_weights(str(self.model_dir / netGBH5))
         self.netDA.save_weights(str(self.model_dir / netDAH5))
         self.netDB.save_weights(str(self.model_dir / netDBH5))
         print ("Models saved.")
 
-    def save_images(self, target_A, target_B, epoch):
-        test_A = target_A[0:14]
-        test_B = target_B[0:14]
+    # def save_images(self, target_A, target_B, epoch):
+    #     test_A = target_A[0:14]
+    #     test_B = target_B[0:14]
 
-        figure_A = numpy.stack([
-            test_A,
-            self.autoencoder_A.predict( test_A ),
-            self.autoencoder_B.predict( test_A ),
-            ], axis=1 )
-        figure_B = numpy.stack([
-            test_B,
-            self.autoencoder_B.predict( test_B ),
-            self.autoencoder_A.predict( test_B ),
-            ], axis=1 )
+    #     figure_A = numpy.stack([
+    #         test_A,
+    #         self.autoencoder_A.predict( test_A ),
+    #         self.autoencoder_B.predict( test_A ),
+    #         ], axis=1 )
+    #     figure_B = numpy.stack([
+    #         test_B,
+    #         self.autoencoder_B.predict( test_B ),
+    #         self.autoencoder_A.predict( test_B ),
+    #         ], axis=1 )
 
-        figure = numpy.concatenate( [ figure_A, figure_B ], axis=0 )
-        figure = figure.reshape( (4,7) + figure.shape[1:] )
-        figure = stack_images( figure )
+    #     figure = numpy.concatenate( [ figure_A, figure_B ], axis=0 )
+    #     figure = figure.reshape( (4,7) + figure.shape[1:] )
+    #     figure = stack_images( figure )
 
-        figure = numpy.clip( figure * 255, 0, 255 ).astype('uint8')
-        cv2.imwrite(str(self.model_dir / '{}.png'.format(epoch)), figure)
-        print('saved model images')
+    #     figure = numpy.clip( figure * 255, 0, 255 ).astype('uint8')
+    #     cv2.imwrite(str(self.model_dir / '{}.png'.format(epoch)), figure)
+    #     print('saved model images')

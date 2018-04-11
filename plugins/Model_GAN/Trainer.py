@@ -25,17 +25,16 @@ class Trainer():
         'random_flip': 0.5,
         }
 
-    def __init__(self, model, fn_A, fn_B, batch_size, perceptual_loss):
+    def __init__(self, model, fn_A, fn_B, batch_size):
         K.set_learning_phase(1)
 
         assert batch_size % 2 == 0, "batch_size must be an even number"
         self.batch_size = batch_size
         self.model = model
 
-        self.use_lsgan = True
-        self.use_mixup = True
+        self.use_lsgan = True # https://arxiv.org/abs/1611.04076
+        self.use_mixup = True # https://arxiv.org/abs/1710.09412
         self.mixup_alpha = 0.2
-        self.use_perceptual_loss = perceptual_loss
         self.use_instancenorm = False
 
         self.lrD = 1e-4 # Discriminator learning rate
@@ -60,21 +59,8 @@ class Trainer():
         else:
             self.loss_fn = lambda output, target : -K.mean(K.log(output+1e-12)*target+K.log(1-output+1e-12)*(1-target))
 
-        # ========== Define Perceptual Loss Model==========
-        if self.use_perceptual_loss:
-            from keras.models import Model
-            from keras_vggface.vggface import VGGFace
-            vggface = VGGFace(include_top=False, model='resnet50', input_shape=(224, 224, 3))
-            vggface.trainable = False
-            out_size55 = vggface.layers[36].output
-            out_size28 = vggface.layers[78].output
-            out_size7 = vggface.layers[-2].output
-            vggface_feat = Model(vggface.input, [out_size55, out_size28, out_size7])
-            vggface_feat.trainable = False
-        else:
-            vggface_feat = None
-
-        #TODO check "Tips for mask refinement (optional after >15k iters)" => https://render.githubusercontent.com/view/ipynb?commit=87d6e7a28ce754acd38d885367b6ceb0be92ec54&enc_url=68747470733a2f2f7261772e67697468756275736572636f6e74656e742e636f6d2f7368616f616e6c752f66616365737761702d47414e2f383764366537613238636537353461636433386438383533363762366365623062653932656335342f46616365537761705f47414e5f76325f737a3132385f747261696e2e6970796e62&nwo=shaoanlu%2Ffaceswap-GAN&path=FaceSwap_GAN_v2_sz128_train.ipynb&repository_id=115182783&repository_type=Repository#Tips-for-mask-refinement-(optional-after-%3E15k-iters)
+        #TODO check "Tips for mask refinement (optional after >15k iters)" 
+        # => https://render.githubusercontent.com/view/ipynb?commit=87d6e7a28ce754acd38d885367b6ceb0be92ec54&enc_url=68747470733a2f2f7261772e67697468756275736572636f6e74656e742e636f6d2f7368616f616e6c752f66616365737761702d47414e2f383764366537613238636537353461636433386438383533363762366365623062653932656335342f46616365537761705f47414e5f76325f737a3132385f747261696e2e6970796e62&nwo=shaoanlu%2Ffaceswap-GAN&path=FaceSwap_GAN_v2_sz128_train.ipynb&repository_id=115182783&repository_type=Repository#Tips-for-mask-refinement-(optional-after-%3E15k-iters)
         loss_DA, loss_GA = self.define_loss(self.model.netDA, real_A, fake_A, distorted_A, vggface_feat)
         loss_DB, loss_GB = self.define_loss(self.model.netDB, real_B, fake_B, distorted_B, vggface_feat)
 
@@ -187,29 +173,6 @@ class Trainer():
         # Edge loss (similar with total variation loss)
         loss_G += 1 * K.mean(K.abs(self.first_order(fake_rgb, axis=1) - self.first_order(real, axis=1)))
         loss_G += 1 * K.mean(K.abs(self.first_order(fake_rgb, axis=2) - self.first_order(real, axis=2)))
-
-
-        # Perceptual Loss
-        if vggface_feat is not None:
-            def preprocess_vggface(x):
-                x = (x + 1)/2 * 255 # channel order: BGR
-                #x[..., 0] -= 93.5940
-                #x[..., 1] -= 104.7624
-                #x[..., 2] -= 129.
-                x -= [91.4953, 103.8827, 131.0912]
-                return x
-            pl_params = (0.011, 0.11, 0.1919)
-            real_sz224 = tf.image.resize_images(real, [224, 224])
-            real_sz224 = Lambda(preprocess_vggface)(real_sz224)
-            # ==========
-            fake_sz224 = tf.image.resize_images(fake_rgb, [224, 224])
-            fake_sz224 = Lambda(preprocess_vggface)(fake_sz224)
-            # ==========
-            real_feat55, real_feat28, real_feat7 = vggface_feat(real_sz224)
-            fake_feat55, fake_feat28, fake_feat7  = vggface_feat(fake_sz224)
-            loss_G += pl_params[0] * K.mean(K.abs(fake_feat7 - real_feat7))
-            loss_G += pl_params[1] * K.mean(K.abs(fake_feat28 - real_feat28))
-            loss_G += pl_params[2] * K.mean(K.abs(fake_feat55 - real_feat55))
 
         return loss_D, loss_G
 

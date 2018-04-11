@@ -40,16 +40,16 @@ if __name__ == '__main__':
                         dest="save_image",
                         default=False,
                         help="Sets save_image option to save current model results")
-    parser.add_argument('-t', '--trainer',
-                        type=str,
-                        choices=PluginLoader.get_available_models(),
-                        default=PluginLoader.get_default_model(),
-                        help="Select which trainer to use.")
-    parser.add_argument('-pl', '--use-perceptual-loss',
+    # parser.add_argument('-t', '--trainer',
+    #                     type=str,
+    #                     choices=PluginLoader.get_available_models(),
+    #                     default=PluginLoader.get_default_model(),
+    #                     help="Select which trainer to use.")
+    parser.add_argument('-ud', '--use-discriminator',
                         action="store_true",
-                        dest="perceptual_loss",
+                        dest="use_discriminator",
                         default=False,
-                        help="Use perceptual loss while training (GAN only)")
+                        help="Use discriminator or not.")
     parser.add_argument('-bs', '--batch-size',
                         type=int,
                         default=64,
@@ -85,11 +85,11 @@ if __name__ == '__main__':
 
     # this is so that you can enter case insensitive values for trainer
     model = PluginLoader.get_model(args.trainer)(get_folder(args.model_dir), args.gpus)
-    model.load()
+    model.load_weights()
     print('')
 
     trainer = PluginLoader.get_trainer(args.trainer)
-    trainer = trainer(model, images_A, images_B, args.batch_size, args.perceptual_loss)
+    trainer = trainer(model, images_A, images_B, args.batch_size)
     print('')
 
     print('Starting training!!!')
