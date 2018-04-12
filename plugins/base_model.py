@@ -83,11 +83,12 @@ class BaseModel(object):
     enc_channels = 512
     enc_img_shape = (enc_img_size, enc_img_size, enc_channels)
     
-    def __init__(self, model_dir, gpus, 
-                 use_discriminator=False):
+    use_discriminator = False
+    nc_D_inp = 3
+    
+    def __init__(self, model_dir, gpus):
         self.model_dir = model_dir
         self.gpus = gpus
-        self.use_discriminator = use_discriminator
         
         self.define_model()
 

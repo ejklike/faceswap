@@ -33,23 +33,18 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--save-interval',
                         type=int,
                         dest="save_interval",
-                        default=100,
+                        default=10,
                         help="Sets the number of iterations before saving the model.")
     parser.add_argument('-si', '--save-image',
                         action="store_true",
                         dest="save_image",
                         default=False,
                         help="Sets save_image option to save current model results")
-    # parser.add_argument('-t', '--trainer',
-    #                     type=str,
-    #                     choices=PluginLoader.get_available_models(),
-    #                     default=PluginLoader.get_default_model(),
-    #                     help="Select which trainer to use.")
-    parser.add_argument('-ud', '--use-discriminator',
-                        action="store_true",
-                        dest="use_discriminator",
-                        default=False,
-                        help="Use discriminator or not.")
+    parser.add_argument('-t', '--trainer',
+                        type=str,
+                        choices=PluginLoader.get_available_models(),
+                        default=PluginLoader.get_default_model(),
+                        help="Select which trainer to use.")
     parser.add_argument('-bs', '--batch-size',
                         type=int,
                         default=64,
