@@ -26,7 +26,7 @@ class Trainer(BaseTrainer):
         # )
         # loss_D += bce(d_out, label)
         
-        # loss_G -= K.mean(binary_crossentropy(label, d_out))
+        loss_G -= K.mean(binary_crossentropy(label, d_out))
         loss_D += K.mean(binary_crossentropy(label, d_out))
 
         return loss_D, loss_G
