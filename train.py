@@ -33,7 +33,7 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--save-interval',
                         type=int,
                         dest="save_interval",
-                        default=10,
+                        default=100,
                         help="Sets the number of iterations before saving the model.")
     parser.add_argument('-si', '--save-image',
                         action="store_true",

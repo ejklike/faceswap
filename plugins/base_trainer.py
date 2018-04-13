@@ -2,7 +2,7 @@
 import time
 import numpy as np
 
-from keras.layers import Input
+from keras.layers import Input, concatenate
 from keras.optimizers import Adam
 from keras import backend as K
 
@@ -34,9 +34,7 @@ class BaseTrainer(object):
         self.model = model
 
         generator = TrainingDataGenerator(self.random_transform_args, 
-                                          coverage=220, 
-                                          scale=6, 
-                                          zoom=1)
+                                          160)
         self.train_batchA = generator.minibatchAB(fn_A, self.batch_size)
         self.train_batchB = generator.minibatchAB(fn_B, self.batch_size)
 
@@ -50,6 +48,14 @@ class BaseTrainer(object):
 
     def after_init(self):
         pass
+
+    def _calculate_loss(self, netD, real, fake):
+        loss_D = loss_G = 0.0
+
+        # MAE loss (basic)
+        loss_G += K.mean(K.abs(fake - real))
+
+        return loss_D, loss_G
 
     def define_loss(self):
         """
@@ -72,80 +78,22 @@ class BaseTrainer(object):
             A (batch_size, 64, 64, 3) tensor, 
             target images for generator_B given input distorted_B.
         """
-        def cycle_vars(netG):
+
+        def _cycle_vars(netG):
             distorted_input = netG.inputs[0]
             fake_output = netG.outputs[0]
             fn_generate = K.function([distorted_input], [fake_output])
             return distorted_input, fake_output, fn_generate
 
-        def first_order(self, img, axis=1):
-            img_nrows = img.shape[1]
-            img_ncols = img.shape[2]
-            if axis == 1:
-                return K.abs(
-                    img[:, :img_nrows - 1, :img_ncols - 1, :] \
-                    - img[:, 1:, :img_ncols - 1, :])
-            elif axis == 2:
-                return K.abs(
-                    img[:, :img_nrows - 1, :img_ncols - 1, :] \
-                    - img[:, :img_nrows - 1, 1:, :])
-            else:
-                return None
-
-
-        def get_loss(netD, real, fake):
-            # MSE LOSS (for LSGAN)
-            mse = lambda output, target : K.mean(K.square(output-target))
-
-            gan_loss = lambda output, target : -K.mean(
-                K.log(output + 1e-12) * target + K.log(1 - output + 1e-12) * (1 - target)
-            )
-
-            LOSS_D = LOSS_G = 0.0
-
-            # MAE loss (basic)
-            loss_G += K.mean(K.abs(fake - real))
-
-            # GAN loss
-            if self.model.use_discriminator is True:
-                if self.use_lsgan is True:
-                    # LSGAN LOSS
-                    # https://arxiv.org/abs/1611.04076
-                    d_out_real = netD(real) # positive sample
-                    d_out_fake = netD(fake) # negative sample
-                    loss_D_real = mse(d_out_real, K.ones_like(d_out_real))
-                    loss_D_fake = mse(d_out_fake, K.zeros_like(d_out_fake))
-                    loss_D += loss_D_real + loss_D_fake
-                    loss_G += mse(output_fake, K.ones_like(output_fake))
-                elif self.use_mixup is True:
-                    # MIXUP
-                    # https://arxiv.org/abs/1710.09412
-                    dist = Beta(self.mixup_alpha, self.mixup_alpha)
-                    lam = dist.sample()
-                    # ==========
-                    mixup = lam * concatenate([real, distorted]) + (1 - lam) * concatenate([fake, distorted])
-                    # ==========
-                    output_mixup = netD(mixup)
-                    loss_D = self.loss_fn(output_mixup, lam * K.ones_like(output_mixup))
-                    output_fake = netD(concatenate([fake, distorted])) # dummy
-                    loss_G = .5 * self.loss_fn(output_mixup, (1 - lam) * K.ones_like(output_mixup))
-
-                if self.edge_loss is True:
-                    # Edge loss (similar with total variation loss)
-                    loss_G += 1 * K.mean(K.abs(self.first_order(fake, axis=1) - self.first_order(real, axis=1)))
-                    loss_G += 1 * K.mean(K.abs(self.first_order(fake, axis=2) - self.first_order(real, axis=2)))
-
-            return loss_D, loss_G
-
         # inputs and outputs
         real_A = Input(shape=self.model.img_shape)
         real_B = Input(shape=self.model.img_shape)
-        distorted_A, fake_A, _ = cycle_vars(self.model.netGA)
-        distorted_B, fake_B, _ = cycle_vars(self.model.netGB)
+        distorted_A, fake_A, _ = _cycle_vars(self.model.netGA)
+        distorted_B, fake_B, _ = _cycle_vars(self.model.netGB)
 
         # losses
-        loss_DA, loss_GA = get_loss(self.model.netDA, real_A, fake_A)
-        loss_DB, loss_GB = get_loss(self.model.netDB, real_B, fake_B)
+        loss_DA, loss_GA = self._calculate_loss(self.model.netDA, real_A, fake_A)
+        loss_DB, loss_GB = self._calculate_loss(self.model.netDB, real_B, fake_B)
 
         # trainable weights
         weightsGA = self.model.netGA.trainable_weights

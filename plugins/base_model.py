@@ -18,6 +18,11 @@ conv_init = RandomNormal(0, 0.02)
 
 def conv_block(n_filter):
     def block(x):
+        """
+        Original:
+        x = Conv2D(n_filter, kernel_size=5, strides=2, padding='same')(x)
+        x = LeakyReLU(0.1)(x)
+        """
         x = Conv2D(n_filter, 
                 kernel_size=3, 
                 strides=2, 
@@ -102,8 +107,8 @@ class BaseModel(object):
         self.netGB = Model(x, self.decoder_B(self.encoder(x)))
 
         if self.use_discriminator is True:
-            self.netDA = Discriminator(self.nc_D_inp)
-            self.netDB = Discriminator(self.nc_D_inp)
+            self.netDA = self.Discriminator()
+            self.netDB = self.Discriminator()
         else:
             self.netDA = self.netDB = None
 
