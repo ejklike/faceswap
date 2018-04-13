@@ -33,8 +33,7 @@ class BaseTrainer(object):
         self.batch_size = batch_size
         self.model = model
 
-        generator = TrainingDataGenerator(self.random_transform_args, 
-                                          160)
+        generator = TrainingDataGenerator(self.random_transform_args)
         self.train_batchA = generator.minibatchAB(fn_A, self.batch_size)
         self.train_batchB = generator.minibatchAB(fn_B, self.batch_size)
 
