@@ -59,7 +59,7 @@ if __name__ == '__main__':
     parser.add_argument('-tg', '--target',
                         type=str,
                         dest="target",
-                        default='A',
+                        default='B',
                         help="Select target. A or B (Default).")
 
     parser.add_argument('-c', '--converter', ###
@@ -127,7 +127,7 @@ if __name__ == '__main__':
     # ==> ???
     model_name = args.trainer
     model = PluginLoader.get_model(model_name)(get_folder(args.model_dir), args.gpus)
-    if not model.load(args.target):
+    if not model.load_weights(args.target):
         print('Model Not Found! A valid model must be provided to continue!')
         exit(1)
     

@@ -139,7 +139,7 @@ class Convert():
         elif self.mask_type == 'facehull':
             image_mask = hull_mask
         else:
-            image_mask = ((face_mask*hull_mask))
+            image_mask = ((face_mask * hull_mask))
 
         if self.erosion_kernel is not None:
             if self.erosion_kernel_size > 0:
