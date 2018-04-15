@@ -17,16 +17,23 @@ class ConvertProcessor(DirectoryProcessor):
             yield filename, image, faces
 
     def convert(self, converter, item):
-        try:
-            (filename, image, faces) = item
+        # try:
+        #     (filename, image, faces) = item
 
-            for idx, face in faces:
-                image = converter.patch_image(image, face, size=64)
+        #     for idx, face in faces:
+        #         image = converter.patch_image(image, face, size=64)
 
-            output_file = get_folder(self.output_dir) / Path(filename).name
-            cv2.imwrite(str(output_file), image)
-        except Exception as e:
-            print('Failed to convert image: {}. Reason: {}'.format(filename, e))
+        #     output_file = get_folder(self.output_dir) / Path(filename).name
+        #     cv2.imwrite(str(output_file), image)
+        # except Exception as e:
+        #     print('Failed to convert image: {}. Reason: {}'.format(filename, e))
+        (filename, image, faces) = item
+
+        for idx, face in faces:
+            image = converter.patch_image(image, face, size=64)
+
+        output_file = get_folder(self.output_dir) / Path(filename).name
+        cv2.imwrite(str(output_file), image)
 
 
 if __name__ == '__main__':

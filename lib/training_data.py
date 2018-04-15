@@ -5,9 +5,9 @@ from random import shuffle
 from .umeyama import umeyama
 
 class TrainingDataGenerator():
-    def __init__(self, random_transform_args, coverage=220, scale=6): #TODO thos default should stay in the warp function
+    def __init__(self, random_transform_args, coverage=180, scale=5): #TODO thos default should stay in the warp function
         self.random_transform_args = random_transform_args
-        self.coverage = coverage # 값이 작을수록 얼굴 가운데 부분을 자른다
+        self.coverage = coverage # 값이 작을수록 얼굴 가운데 부분에 집중되도록 자른다
         self.scale = scale
 
     def minibatchAB(self, images, batchsize):
@@ -55,19 +55,19 @@ class TrainingDataGenerator():
             return result
 
         # get pair of random warped images from aligned face image
-        def _random_warp(image, coverage, scale):
+        def _random_warp(image):
             assert image.shape == (256, 256, 3)
             num = 5
             out_size = 64
 
             # num x num lattice points in center region of input image
-            range_ = np.linspace(128 - coverage//2, 128 + coverage//2, num=num)
+            range_ = np.linspace(128 - self.coverage//2, 128 + self.coverage//2, num=num)
             mapx = np.broadcast_to(range_, (num, num))
             mapy = mapx.T
 
             # random scattering
-            mapx = mapx + np.random.normal(size=(num, num), scale=scale)
-            mapy = mapy + np.random.normal(size=(num, num), scale=scale)
+            mapx = mapx + np.random.normal(size=(num, num), scale=self.scale)
+            mapy = mapy + np.random.normal(size=(num, num), scale=self.scale)
 
             # interp_size = 80
             # interested_region = 8:72 (size 64)
@@ -93,7 +93,7 @@ class TrainingDataGenerator():
 
         image = cv2.resize(image, (256, 256))
         image = _random_transform(image, **self.random_transform_args)
-        warped_img, target_img = _random_warp(image, self.coverage, self.scale)
+        warped_img, target_img = _random_warp(image)
 
         return warped_img, target_img
 

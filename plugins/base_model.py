@@ -24,7 +24,7 @@ def conv_block(n_filter):
         x = LeakyReLU(0.1)(x)
         """
         x = Conv2D(n_filter, 
-                kernel_size=3, 
+                kernel_size=5, 
                 strides=2, 
                 kernel_initializer=conv_init, 
                 use_bias=False, 
@@ -145,48 +145,50 @@ class BaseModel(object):
 
     def Encoder(self):
         inp = Input(shape=self.img_shape)
-        x = inp
+        x = inp                         # (64, 64, 3)
         # x = Conv2D(64, # from GAN model
         #            kernel_size=5, 
         #            kernel_initializer=conv_init, 
         #            use_bias=False, 
         #            padding="same")(x)
-        x = conv_block(128)(x)
-        x = conv_block(256)(x)
-        x = conv_block(512)(x)
-        x = conv_block(1024)(x)
-        x = Dense(1024)(Flatten()(x))
-        x = Dense(4 * 4 * 1024)(x)
-        x = Reshape((4, 4, 1024))(x)
-        out = upscale_block_ps(512)(x)
+        x = conv_block(128)(x)          # (32, 32, 128)
+        x = conv_block(256)(x)          # (16, 16, 256)
+        x = conv_block(512)(x)          # (8, 8, 512)
+        x = conv_block(1024)(x)         # (4, 4, 1024)
+        x = Dense(1024)(Flatten()(x))   # (1024)
+        x = Dense(4 * 4 * 1024)(x)      # (1024 * 16 = 16384)
+        x = Reshape((4, 4, 1024))(x)    # (4, 4, 1024)
+        out = upscale_block_ps(512)(x)  # (8, 8, 512)
         return Model(inputs=inp, outputs=out)
 
     def Decoder(self):
         inp = Input(shape=self.enc_img_shape)
-        x = inp
-        x = upscale_block_ps(256)(x)
-        x = upscale_block_ps(128)(x)
-        x = upscale_block_ps(64)(x)
+        x = inp                         # (8, 8, 512)
+        x = upscale_block_ps(256)(x)    # (16, 16, 256)
+        x = upscale_block_ps(128)(x)    # (32, 32, 128)
+        x = upscale_block_ps(64)(x)     # (64, 64, 64)
         # x = res_block(64)(x) # from GAN model
         # x = res_block(64)(x) # from GAN model
         out = Conv2D(3, 
                    kernel_size=5, 
                    padding='same', 
-                   activation='tanh')(x)
+                   activation='tanh')(x) # (64, 64, 3)
         return Model(inp, out)
 
     def Discriminator(self):
         inp = Input(shape=self.img_shape)
-        x = inp
-        x = conv_block_d(64)(x)
-        x = conv_block_d(128)(x)
-        x = conv_block_d(256)(x)
-        out = Conv2D(1, 
-                     kernel_size=4, 
+        x = inp                     # (64, 64, 3)
+        x = conv_block_d(64)(x)     # (32, 32, 64)
+        x = conv_block_d(128)(x)    # (16, 16, 128)
+        x = conv_block_d(256)(x)    # (8, 8, 256)
+        x = conv_block_d(512)(x)    # (4, 4, 512)
+        out = Conv2D(1,             # (1, 1, 1)
+                     kernel_size=4,
                      kernel_initializer=conv_init, 
                      use_bias=False, 
-                     padding="same", 
+                     padding="valid", 
                      activation="sigmoid")(x)   
+        print(out.shape)
         return Model(inputs=[inp], outputs=out)
 
     def converter(self, target='B'):

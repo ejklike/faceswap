@@ -3,15 +3,6 @@ import argparse
 from plugins.loader import PluginLoader
 from lib.utils import get_image_paths, get_folder
 
-
-def set_tf_allow_growth(self):
-    import tensorflow as tf
-    from keras.backend.tensorflow_backend import set_session
-    config = tf.ConfigProto()
-    config.gpu_options.allow_growth = True
-    config.gpu_options.visible_device_list = "0"
-    set_session(tf.Session(config=config))
-
 if __name__ == '__main__':
     # TODO: swap A and B ==> from arbitrary to target
     parser = argparse.ArgumentParser(description='train swap model between A and B')
@@ -49,14 +40,9 @@ if __name__ == '__main__':
                         type=int,
                         default=64,
                         help="Batch size, as a power of 2 (64, 128, 256, etc)")
-    parser.add_argument('-ag', '--allow-growth',
-                        action="store_true",
-                        dest="allow_growth",
-                        default=False,
-                        help="Sets allow_growth option of Tensorflow to spare memory on some configs")
     parser.add_argument('-ep', '--epochs',
                         type=int,
-                        default=1000000,
+                        default=20000,
                         help="Length of training in epochs.")
     parser.add_argument('-g', '--gpus',
                         type=int,
@@ -69,9 +55,6 @@ if __name__ == '__main__':
     print("Data B Directory: {}".format(args.input_B))
     print("Training result directory: {}".format(args.model_dir))
     print('')
-
-    if args.allow_growth:
-        set_tf_allow_growth()
 
     print('Loading data, this may take a while...')
     images_A = get_image_paths(args.input_A)

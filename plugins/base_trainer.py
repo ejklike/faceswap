@@ -13,17 +13,17 @@ import os
 import cv2
 from lib.training_data import stack_images
 
-lrD = 5e-5
-lrG = 5e-5
+lrD = 1e-4
+lrG = 1e-4
 beta_1 = 0.5
 beta_2 = 0.999
 
 class BaseTrainer(object):
     random_transform_args = {
-        'rotation_range': 20,
-        'zoom_range': 0.1,
+        'rotation_range': 10,
+        'zoom_range': 0.05,
         'shift_range': 0.05,
-        'random_flip': 0.5,
+        'random_flip': 0.4,
     }
 
     def __init__(self, model, fn_A, fn_B, batch_size, *kwargs):
@@ -113,7 +113,7 @@ class BaseTrainer(object):
             training_updates = Adam(lr=lrD, beta_1=0.5).get_updates(weightsDB,[],loss_DB)
             self.netDB_train = K.function([distorted_B, real_B], [loss_DB], training_updates)
 
-    def train_one_step(self, iter, save_image=False):
+    def train_one_step(self, epoch, save_image=False):
         epoch, warped_A, target_A = next(self.train_batchA)
         epoch, warped_B, target_B = next(self.train_batchB)
 
@@ -131,14 +131,15 @@ class BaseTrainer(object):
             self.errDB_sum += errDB[0]
 
         self.avg_counter += 1
-
-        print('[%s] [%d/%s][%d] Loss_DA: %f Loss_DB: %f Loss_GA: %f Loss_GB: %f'
-              % (time.strftime("%H:%M:%S"), epoch, "num_epochs", iter, self.errDA_sum/self.avg_counter, self.errDB_sum/self.avg_counter, self.errGA_sum/self.avg_counter, self.errGB_sum/self.avg_counter),
-              end='\r')
+        print('[%s][%d] Loss_DA: %.5f Loss_DB: %.5f Loss_GA: %.5f Loss_GB: %.5f'
+            % (time.strftime("%H:%M:%S"), epoch, 
+            self.errDA_sum/self.avg_counter, self.errDB_sum/self.avg_counter, 
+            self.errGA_sum/self.avg_counter, self.errGB_sum/self.avg_counter),
+            end='\r')
 
         if save_image is True:
-            self.save_images(target_A, target_B, iter)
-
+            self.save_images(target_A, target_B, epoch)
+        
     def save_images(self, target_A, target_B, epoch):
         n_image = min(10, self.batch_size)
         test_A = target_A[:n_image]
@@ -160,5 +161,5 @@ class BaseTrainer(object):
         figure = stack_images( figure )
 
         figure = np.clip((figure + 1) * 255 / 2, 0, 255).astype('uint8')
-        cv2.imwrite(str(self.model.model_dir / '{}.png'.format(epoch)), figure)
+        cv2.imwrite(str(self.model.model_dir / '{:0000000}.png'.format(epoch)), figure)
         print('saved model images', end='\r')

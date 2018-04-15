@@ -14,7 +14,6 @@ class DirectoryProcessor(object):
     images_found = 0
     num_faces_detected = 0
     faces_detected = dict()
-    verify_output = False
 
     def __init__(self, input_dir, output_dir):
         self.input_dir = input_dir
@@ -53,10 +52,3 @@ class DirectoryProcessor(object):
         print('Images found:        {}'.format(self.images_found))
         print('Faces detected:      {}'.format(self.num_faces_detected))
         print('-------------------------')
-
-        if self.verify_output:
-            print('Note:')
-            print('Multiple faces were detected in one or more pictures.')
-            print('Double check your results.')
-            print('-------------------------')
-        print('Done!')
