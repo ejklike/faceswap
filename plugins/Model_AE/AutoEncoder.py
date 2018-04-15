@@ -1,4 +1,7 @@
 # AutoEncoder base classes
+import cv2
+import numpy as np
+from lib.training_data import stack_images
 
 encoderH5 = 'encoder.h5'
 decoder_AH5 = 'decoder_A.h5'
@@ -15,7 +18,7 @@ class AutoEncoder(object):
 
         self.initModel()
 
-    def load(self, target):
+    def load(self, target='B'):
         (face_A, face_B) = (decoder_AH5, decoder_BH5) if target == 'B' else (decoder_BH5, decoder_AH5)
 
         try:
@@ -39,21 +42,21 @@ class AutoEncoder(object):
         test_A = target_A[0:14]
         test_B = target_B[0:14]
 
-        figure_A = numpy.stack([
+        figure_A = np.stack([
             test_A,
             self.autoencoder_A.predict( test_A ),
             self.autoencoder_B.predict( test_A ),
             ], axis=1 )
-        figure_B = numpy.stack([
+        figure_B = np.stack([
             test_B,
             self.autoencoder_B.predict( test_B ),
             self.autoencoder_A.predict( test_B ),
             ], axis=1 )
 
-        figure = numpy.concatenate( [ figure_A, figure_B ], axis=0 )
+        figure = np.concatenate( [ figure_A, figure_B ], axis=0 )
         figure = figure.reshape( (4,7) + figure.shape[1:] )
         figure = stack_images( figure )
 
-        figure = numpy.clip( figure * 255, 0, 255 ).astype('uint8')
+        figure = np.clip( figure * 255, 0, 255 ).astype('uint8')
         cv2.imwrite(str(self.model_dir / '{}.png'.format(epoch)), figure)
         print('saved model images')

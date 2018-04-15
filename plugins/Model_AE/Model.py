@@ -14,7 +14,7 @@ from keras.utils import multi_gpu_model
 # for saving images
 import os
 import cv2
-import numpy
+import numpy as np
 from lib.training_data import stack_images
 
 IMAGE_SHAPE = (64, 64, 3)
