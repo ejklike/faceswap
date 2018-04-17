@@ -2,7 +2,6 @@ import cv2
 import numpy
 from random import shuffle
 
-from .utils import BackgroundGenerator
 from .umeyama import umeyama
 
 class TrainingDataGenerator():
@@ -13,8 +12,8 @@ class TrainingDataGenerator():
         self.zoom = zoom
 
     def minibatchAB(self, images, batchsize):
-        batch = BackgroundGenerator(self.minibatch(images, batchsize), 1)
-        for ep1, warped_img, target_img in batch.iterator():
+        batch = self.minibatch(images, batchsize)
+        for ep1, warped_img, target_img in batch:
             yield ep1, warped_img, target_img
 
     # A generator function that yields epoch, batchsize of warped_img and batchsize of target_img

@@ -13,6 +13,25 @@ def get_folder(path):
     return output_dir
 
 
+def get_target_paths(target_dir='./data', 
+                     model_dir='./model'):
+    target_names = []
+    target_paths = []
+
+    if not os.path.exists(target_dir):
+        target_dir = get_folder(target_dir).path
+
+    target_scanned = list(scandir(target_dir))
+    for target in target_scanned:
+        if target.name[0] != '.':
+            print('   - ' + target.name)
+            target_model_dir = '{}/{}'.format(model_dir, target.name)
+            print(get_folder(target_model_dir), target_model_dir)
+            target_names.append(target.name)
+            target_paths.append(get_image_paths(target.path))
+    return target_names, target_paths
+
+
 def get_image_paths(directory):
     dir_contents = []
 
@@ -36,29 +55,3 @@ def load_images( image_paths, convert=None ):
             all_images = numpy.empty( ( len(image_paths), ) + image.shape, dtype=image.dtype )
         all_images[i] = image
     return all_images
-
-
-# From: https://stackoverflow.com/questions/7323664/python-generator-pre-fetch
-import threading
-import queue as Queue
-class BackgroundGenerator(threading.Thread):
-    def __init__(self, generator, prefetch=1): #See below why prefetch count is flawed
-        threading.Thread.__init__(self)
-        self.queue = Queue.Queue(prefetch)
-        self.generator = generator
-        self.daemon = True
-        self.start()
-
-    def run(self):
-        # Put until queue size is reached. Note: put blocks only if put is called while queue has already reached max size
-        # => this makes 2 prefetched items! One in the queue, one waiting for insertion!
-        for item in self.generator:
-            self.queue.put(item)
-        self.queue.put(None)
-
-    def iterator(self):
-        while True:
-            next_item = self.queue.get()
-            if next_item is None:
-                break
-            yield next_item
