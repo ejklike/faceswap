@@ -67,12 +67,12 @@ if __name__ == '__main__':
         set_tf_allow_growth()
 
     print('Loading data, this may take a while...')
-    target_name, target_images = get_target_paths()
+    target_names, target_images = get_target_paths()
     print('')
 
     # this is so that you can enter case insensitive values for trainer
     model = PluginLoader.get_model(args.trainer)
-    model = model(get_folder(args.model_dir), args.gpus) ###target_name)
+    model = model(get_folder(args.model_dir), target_names, args.gpus)
     model.load()
     print('')
 
