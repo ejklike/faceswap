@@ -60,7 +60,7 @@ if __name__ == '__main__':
                         type=str,
                         dest="target",
                         default='A',
-                        help="Select target. A or B (Default).")
+                        help="Select target.")
 
     parser.add_argument('-c', '--converter', ###
                         type=str,

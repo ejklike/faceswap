@@ -24,19 +24,17 @@ class MultiAutoEncoder(object):
             decoder.save_weights(str(self.model_dir / decoderH5.format(dec_name)))
         print('saved model weights')
 
-    def load(self, target=None):
-        # TODO: target의 decoder를 가져오는 load와, 초반 weight를 불러오는 load를 나눠야 하나..?
-        if target is not None:
-            try:
-                self.encoder.load_weights(str(self.model_dir / encoderH5))
-                for dec_name, decoder in self.decoder_dict.items():
-                    decoder.load_weights(str(self.model_dir / decoderH5.format(dec_name)))
-                print('loaded model weights')
-                return True
-            except Exception as e:
-                print('Failed loading existing model weights.')
-                print(e)
-                return False
+    def load(self):
+        try:
+            self.encoder.load_weights(str(self.model_dir / encoderH5))
+            for dec_name, decoder in self.decoder_dict.items():
+                decoder.load_weights(str(self.model_dir / decoderH5.format(dec_name)))
+            print('loaded model weights')
+            return True
+        except Exception as e:
+            print('Failed loading existing model weights.')
+            print(e)
+            return False
 
 
     def save_images(self, target_A, target_B, epoch):
