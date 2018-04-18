@@ -9,7 +9,6 @@ decoderH5 = 'decoder_{}.h5'
 class MultiAutoEncoder(object):
     def __init__(self, model_dir, target_names, gpus):
         self.model_dir = model_dir
-        self.target_names = target_names
         self.gpus = gpus
 
         self.encoder = self.Encoder()
@@ -22,7 +21,7 @@ class MultiAutoEncoder(object):
     def save_weights(self):
         self.encoder.save_weights(str(self.model_dir / encoderH5))
         for dec_name, decoder in self.decoder_dict.items():
-            decoder.save_weights(str(self.model_dir / decoderH5.format(target_name)))
+            decoder.save_weights(str(self.model_dir / decoderH5.format(dec_name)))
         print('saved model weights')
 
     def load(self, target=None):
@@ -30,9 +29,8 @@ class MultiAutoEncoder(object):
         if target is not None:
             try:
                 self.encoder.load_weights(str(self.model_dir / encoderH5))
-                for decoder in zip()
-                self.decoder_A.load_weights(str(self.model_dir / face_A))
-                self.decoder_B.load_weights(str(self.model_dir / face_B))
+                for dec_name, decoder in self.decoder_dict.items():
+                    decoder.load_weights(str(self.model_dir / decoderH5.format(dec_name)))
                 print('loaded model weights')
                 return True
             except Exception as e:
@@ -42,6 +40,7 @@ class MultiAutoEncoder(object):
 
 
     def save_images(self, target_A, target_B, epoch):
+        # TODO: target????????
         test_A = target_A[0:14]
         test_B = target_B[0:14]
 

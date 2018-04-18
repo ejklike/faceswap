@@ -13,23 +13,42 @@ def get_folder(path):
     return output_dir
 
 
-def get_target_paths(target_dir='./data', 
+# def get_target_paths(target_dir='./data', 
+#                      model_dir='./model'):
+#     target_names = []
+#     target_paths = []
+
+#     if not os.path.exists(target_dir):
+#         target_dir = get_folder(target_dir).path
+
+#     target_scanned = list(scandir(target_dir))
+#     for target in target_scanned:
+#         if target.name[0] != '.':
+#             print('   - ' + target.name)
+#             target_model_dir = '{}/{}'.format(model_dir, target.name)
+#             print(get_folder(target_model_dir), target_model_dir)
+#             target_names.append(target.name)
+#             target_paths.append(get_image_paths(target.path))
+#     return target_names, target_paths
+
+
+def get_target_paths(data_dir='./data', 
                      model_dir='./model'):
-    target_names = []
-    target_paths = []
+    target_path_dict = dict()
 
-    if not os.path.exists(target_dir):
-        target_dir = get_folder(target_dir).path
+    if not os.path.exists(data_dir):
+        data_dir = get_folder(data_dir).path
 
-    target_scanned = list(scandir(target_dir))
-    for target in target_scanned:
+    data_dir_scanned = list(scandir(data_dir))
+    for target in data_dir_scanned:
         if target.name[0] != '.':
             print('   - ' + target.name)
-            target_model_dir = '{}/{}'.format(model_dir, target.name)
-            print(get_folder(target_model_dir), target_model_dir)
-            target_names.append(target.name)
-            target_paths.append(get_image_paths(target.path))
-    return target_names, target_paths
+            target_data_dir = '{}/{}/face'.format(data_dir, target.name)
+            get_folder(target_data_dir)
+            # target_model_dir = '{}/{}'.format(model_dir, target.name)
+            # print(get_folder(target_model_dir), target_data_dir)
+            target_path_dict[target.name] = get_image_paths(target_data_dir)
+    return target_path_dict
 
 
 def get_image_paths(directory):
@@ -42,7 +61,6 @@ def get_image_paths(directory):
     for x in dir_scanned:
         if any([x.name.lower().endswith(ext) for ext in image_extensions]):
             dir_contents.append(x.path)
-
     return dir_contents
 
 
