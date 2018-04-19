@@ -19,47 +19,78 @@ tqdm
 
 ## How to
 
-1\. `source`, `target` 얼굴 데이터를 준비한다.
+1\. 얼굴 데이터를 준비한다.
 
-- 이 때, 데이터를 각각 `./data_A/`와 `./data_B/`에 넣어 준비하거나, 별도의 폴더 위치를 인자로 넣어주자.
-- 얼굴 이미지는 **mean facial landmark**에 맞추어 transformation 되어 있는 상태여야 한다.
+- 데이터를 준비해둘 경로의 기본값은 `./data`이다.
+  - 이 때, 사람 별로 얼굴 데이터를 폴더에 담아 준비해야 한다.
+  - 예: `./data/trump`, `./data/cage`, ...
+- 얼굴 이미지는 bounding box에 맞게 오려져 **mean facial landmark**에 맞추어 transformation 되어 있는 상태여야 한다.
+  - 만약 그렇지 않다면, `extract.py`를 활용하여 학습 데이터를 준비하자.
+
+```bash
+$ python extract.py -ag -i ../faceon-dataset/5/face -o ./data/5
+```
+
+usage statement
+
+
+```
+usage: extract.py [-h] [-i INPUT_DIR] [-o OUTPUT_DIR] [-D {hog,cnn}] [-dl]
+                  [-ag] [-c CUDA_VISIBLE_DEVICES]
+
+Extract the faces from a pictures.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INPUT_DIR, --input-dir INPUT_DIR
+                        Input directory. A directory containing the files you
+                        wish to process. Defaults to 'input'
+  -o OUTPUT_DIR, --output-dir OUTPUT_DIR
+                        Output directory. This is where the converted files
+                        will be stored. Defaults to 'output'
+  -D {hog,cnn}, --detector {hog,cnn}
+                        Detector to use. 'cnn' detects much more angles but
+                        will be much more resource intensive and may fail on
+                        large files.
+  -dl, --debug-landmarks
+                        Draw landmarks for debug.
+  -ag, --allow-growth   Sets allow_growth option of Tensorflow to spare memory
+                        on some configs
+  -c CUDA_VISIBLE_DEVICES, --cuda_visible_devices CUDA_VISIBLE_DEVICES
+                        CUDA_VISIBLE_DEVICES value (e.g., -c 0,1)
+```
 
 2\. 모델을 학습한다.
 
-- 학습된 모델은 `./model/modelname/`에 저장된다.
+- 학습된 모델은 기본으로 `./model/default/`에 저장된다.
 - 학습 가능한 모델들은 추가예정
   - AE
-  - TODO: GAN
+  - GAN
+  - **multiAE (AE에서 n>2로 확장한 버전)**
   - TODO: Fast face-swap using CNN
 
 ```bash
-$ python train.py
+$ python train.py -t multiAE -c 0,1 -s 10 -ag -b 8 -si
 ```
 
 usage statement
 
 ```
-usage: train.py [-h] [-A INPUT_A] [-B INPUT_B] [-m MODEL_DIR]
-                [-s SAVE_INTERVAL] [-si] [-t {AE}] [-pl] [-bs BATCH_SIZE]
-                [-ag] [-ep EPOCHS] [-g GPUS]
+usage: train.py [-h] [-m MODEL_DIR] [-s SAVE_INTERVAL] [-si]
+                [-t {AE,multiAE,GAN}] [-pl] [-bs BATCH_SIZE] [-ag]
+                [-ep EPOCHS] [-c CUDA_VISIBLE_DEVICES]
 
-train swap model between A and B
+train faceswap model
 
 optional arguments:
   -h, --help            show this help message and exit
-  -A INPUT_A, --input-A INPUT_A
-                        Input directory. A directory containing training
-                        images for face A. Defaults to 'input'
-  -B INPUT_B, --input-B INPUT_B
-                        Input directory. A directory containing training
-                        images for face B. Defaults to 'input'
   -m MODEL_DIR, --model-dir MODEL_DIR
                         Model directory. This is where the training data will
-                        be stored. Defaults to 'model'
+                        be stored. Defaults to 'model/default'
   -s SAVE_INTERVAL, --save-interval SAVE_INTERVAL
                         Sets the number of iterations before saving the model.
   -si, --save-image     Sets save_image option to save current model results
-  -t {AE}, --trainer {AE}
+  -t {AE,multiAE,GAN}, --trainer {AE,multiAE,GAN}
                         Select which trainer to use.
   -pl, --use-perceptual-loss
                         Use perceptual loss while training
@@ -69,23 +100,25 @@ optional arguments:
                         on some configs
   -ep EPOCHS, --epochs EPOCHS
                         Length of training in epochs.
-  -g GPUS, --gpus GPUS  Number of GPUs to use for training
+  -c CUDA_VISIBLE_DEVICES, --cuda_visible_devices CUDA_VISIBLE_DEVICES
+                        CUDA_VISIBLE_DEVICES value (e.g., -c 0,1)
 ```
 
 3\. 원하는 사진을 입력하여 faceswap 결과를 살펴본다.
 
 ```
-python convert.py
+$ python convert.py
 ```
 
 usage statement
 
 ```
 usage: convert.py [-h] [-i INPUT_DIR] [-o OUTPUT_DIR] [-m MODEL_DIR]
-                  [-t {AE,GAN}] [-tg TARGET] [-c {Masked,Adjust}]
+                  [-t {AE,multiAE,GAN}] [-tg TARGET] [-ct {Masked,Adjust}]
                   [-D {hog,cnn}] [-b BLUR_SIZE] [-S]
                   [-M {rect,facehull,facehullandrect}]
-                  [-e EROSION_KERNEL_SIZE] [-mh] [-sm] [-aca] [-g GPUS]
+                  [-e EROSION_KERNEL_SIZE] [-mh] [-sm] [-aca] [-ag]
+                  [-c CUDA_VISIBLE_DEVICES]
 
 Convert a source image to a new one with the face swapped
 
@@ -101,11 +134,11 @@ optional arguments:
                         Model directory. A directory containing the trained
                         model you wish to process. Defaults to
                         './results/model/'
-  -t {AE}, --trainer {AE}
+  -t {AE,multiAE,GAN}, --trainer {AE,multiAE,GAN}
                         Select the trainer that was used to create the model.
   -tg TARGET, --target TARGET
-                        Select target. A or B (Default).
-  -c {Masked,Adjust}, --converter {Masked,Adjust}
+                        Select target.
+  -ct {Masked,Adjust}, --converter {Masked,Adjust}
                         Converter to use.
   -D {hog,cnn}, --detector {hog,cnn}
                         Detector to use. 'cnn' detects much more angles but
@@ -126,8 +159,10 @@ optional arguments:
   -sm, --smooth-mask    Smooth mask (Adjust converter only)
   -aca, --avg-color-adjust
                         Average color adjust. (Adjust converter only)
-  -g GPUS, --gpus GPUS  Number of GPUs to use for conversion
-
+  -ag, --allow-growth   Sets allow_growth option of Tensorflow to spare memory
+                        on some configs
+  -c CUDA_VISIBLE_DEVICES, --cuda_visible_devices CUDA_VISIBLE_DEVICES
+                        CUDA_VISIBLE_DEVICES value (e.g., -c 0,1)
 ```
 
 ## References
