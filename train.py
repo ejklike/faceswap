@@ -5,7 +5,7 @@ from lib.utils import get_target_paths, get_folder, set_tf_allow_growth
 
 if __name__ == '__main__':
     # TODO: swap A and B ==> from arbitrary to target
-    parser = argparse.ArgumentParser(description='train swap model between A and B')
+    parser = argparse.ArgumentParser(description='train faceswap model')
     parser.add_argument('-m', '--model-dir',
                         dest="model_dir",
                         default="model/default",
@@ -58,6 +58,8 @@ if __name__ == '__main__':
         args.gpus = len(args.cuda_visible_devices.split(','))
         if args.allow_growth:
             set_tf_allow_growth(args.cuda_visible_devices)
+    else:
+        args.gpus = 1
 
     print('Loading data, this may take a while...')
     target_image_path_dict = get_target_paths()

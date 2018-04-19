@@ -93,6 +93,8 @@ if __name__ == '__main__':
         args.gpus = len(args.cuda_visible_devices.split(','))
         if args.allow_growth:
             set_tf_allow_growth(args.cuda_visible_devices)
+    else:
+        args.gpus = 1
 
     extractor = ExtractProcessor(args.input_dir, args.output_dir)
     extractor.handle_images(args.detector, debug_landmarks=args.debug_landmarks)

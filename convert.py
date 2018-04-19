@@ -62,7 +62,7 @@ if __name__ == '__main__':
                         default='A',
                         help="Select target.")
 
-    parser.add_argument('-c', '--converter', ###
+    parser.add_argument('-ct', '--converter', ###
                         type=str,
                         choices=("Masked", "Adjust"), # case sensitive because this is used to load a plugin.
                         default="Masked",
@@ -127,6 +127,8 @@ if __name__ == '__main__':
         args.gpus = len(args.cuda_visible_devices.split(','))
         if args.allow_growth:
             set_tf_allow_growth(args.cuda_visible_devices)
+    else:
+        args.gpus = 1
 
     # Original & LowMem models go with Adjust or Masked converter
     # Note: GAN prediction outputs a mask + an image, while other predicts only an image
