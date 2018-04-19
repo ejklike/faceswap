@@ -4,7 +4,7 @@ from plugins.loader import PluginLoader
 from lib.utils import get_target_paths, get_folder
 
 
-def set_tf_allow_growth(self):
+def set_tf_allow_growth():
     import tensorflow as tf
     from keras.backend.tensorflow_backend import set_session
     config = tf.ConfigProto()

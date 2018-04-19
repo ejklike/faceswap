@@ -37,26 +37,17 @@ class MultiAutoEncoder(object):
             return False
 
 
-    def save_images(self, target_A, target_B, epoch):
-        # TODO: target????????
-        test_A = target_A[0:14]
-        test_B = target_B[0:14]
+    def save_images(self, target_img, target_name,  epoch):
+        test = target_img[:8]
 
-        figure_A = np.stack([
-            test_A,
-            self.autoencoder_A.predict( test_A ),
-            self.autoencoder_B.predict( test_A ),
+        figure = np.stack([
+            test,
+            self.autoencoder_dict[target_name].predict(test),
             ], axis=1 )
-        figure_B = np.stack([
-            test_B,
-            self.autoencoder_B.predict( test_B ),
-            self.autoencoder_A.predict( test_B ),
-            ], axis=1 )
-
-        figure = np.concatenate( [ figure_A, figure_B ], axis=0 )
-        figure = figure.reshape( (4,7) + figure.shape[1:] )
+        # print(figure, figure.shape)
+        figure = figure.reshape( (4, 2) + figure.shape[1:] )
         figure = stack_images( figure )
 
         figure = np.clip( figure * 255, 0, 255 ).astype('uint8')
-        cv2.imwrite(str(self.model_dir / '{}.png'.format(epoch)), figure)
+        cv2.imwrite(str(self.model_dir / '{}_{}.png'.format(target_name, epoch)), figure)
         print('saved model images')
