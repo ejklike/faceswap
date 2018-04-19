@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 from plugins.loader import PluginLoader
 from plugins.DirectoryProcessor import DirectoryProcessor
-from lib.utils import get_target_paths, get_image_paths, get_folder
+from lib.utils import get_target_paths, get_image_paths, get_folder, set_tf_allow_growth
 
 class ConvertProcessor(DirectoryProcessor):
     def prepare_images(self, detector):
