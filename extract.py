@@ -82,10 +82,17 @@ if __name__ == '__main__':
                         default=False,
                         help="Sets allow_growth option of Tensorflow to spare memory on some configs")
 
+    parser.add_argument('-c', '--cuda_visible_devices',
+                        type=str,
+                        default=None,
+                        help="CUDA_VISIBLE_DEVICES value (e.g., -c 0,1)")
+
     args = parser.parse_args()
     
-    if args.allow_growth:
-        set_tf_allow_growth()
+    if args.cuda_visible_devices is not None:
+        args.gpus = len(args.cuda_visible_devices.split(','))
+        if args.allow_growth:
+            set_tf_allow_growth(cuda_visible_devices)
 
     extractor = ExtractProcessor(args.input_dir, args.output_dir)
     extractor.handle_images(args.detector, debug_landmarks=args.debug_landmarks)

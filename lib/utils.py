@@ -6,12 +6,12 @@ from scandir import scandir
 
 image_extensions = [".jpg", ".jpeg", ".png", ".tif", ".tiff"]
 
-def set_tf_allow_growth():
+def set_tf_allow_growth(cuda_visible_devices="0"):
     import tensorflow as tf
     from keras.backend.tensorflow_backend import set_session
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
-    config.gpu_options.visible_device_list = "0"
+    config.gpu_options.visible_device_list = cuda_visible_devices
     set_session(tf.Session(config=config))
 
 

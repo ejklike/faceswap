@@ -44,18 +44,20 @@ if __name__ == '__main__':
                         type=int,
                         default=1000000,
                         help="Length of training in epochs.")
-    parser.add_argument('-g', '--gpus',
-                        type=int,
-                        default=1,
-                        help="Number of GPUs to use for training")
+    parser.add_argument('-c', '--cuda_visible_devices',
+                        type=str,
+                        default=None,
+                        help="CUDA_VISIBLE_DEVICES value (e.g., -c 0,1)")
 
     args = parser.parse_args()
     print("Training model: {}".format(args.trainer))
     print("Training result directory: {}".format(args.model_dir))
     print('')
 
-    if args.allow_growth:
-        set_tf_allow_growth()
+    if args.cuda_visible_devices is not None:
+        args.gpus = len(args.cuda_visible_devices.split(','))
+        if args.allow_growth:
+            set_tf_allow_growth(cuda_visible_devices)
 
     print('Loading data, this may take a while...')
     target_image_path_dict = get_target_paths()

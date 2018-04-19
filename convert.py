@@ -116,11 +116,17 @@ if __name__ == '__main__':
                         default=True,
                         help="Average color adjust. (Adjust converter only)")
 
-    parser.add_argument('-g', '--gpus',
-                        type=int,
-                        default=1,
-                        help="Number of GPUs to use for conversion")
+    parser.add_argument('-c', '--cuda_visible_devices',
+                        type=str,
+                        default=None,
+                        help="CUDA_VISIBLE_DEVICES value (e.g., -c 0,1)")
+
     args = parser.parse_args()
+
+    if args.cuda_visible_devices is not None:
+        args.gpus = len(args.cuda_visible_devices.split(','))
+        if args.allow_growth:
+            set_tf_allow_growth(cuda_visible_devices)
 
     # Original & LowMem models go with Adjust or Masked converter
     # Note: GAN prediction outputs a mask + an image, while other predicts only an image
