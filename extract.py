@@ -34,7 +34,7 @@ class ExtractProcessor(DirectoryProcessor):
                     output_file = get_folder(self.output_dir / 'no_face') / Path(filename).stem
                     cv2.imwrite('{}_{}'.format(str(output_file), Path(filename).suffix), image)
                     continue
-                
+
                 for idx, face in process_faces:
                     # Draws landmarks for debug
                     if debug_landmarks is True:
@@ -75,7 +75,7 @@ if __name__ == '__main__':
                         dest="debug_landmarks",
                         default=False,
                         help="Draw landmarks for debug.")
-    
+
     parser.add_argument('-ag', '--allow-growth',
                         action="store_true",
                         dest="allow_growth",
@@ -88,11 +88,11 @@ if __name__ == '__main__':
                         help="CUDA_VISIBLE_DEVICES value (e.g., -c 0,1)")
 
     args = parser.parse_args()
-    
+
     if args.cuda_visible_devices is not None:
         args.gpus = len(args.cuda_visible_devices.split(','))
         if args.allow_growth:
-            set_tf_allow_growth(cuda_visible_devices)
+            set_tf_allow_growth(args.cuda_visible_devices)
 
     extractor = ExtractProcessor(args.input_dir, args.output_dir)
     extractor.handle_images(args.detector, debug_landmarks=args.debug_landmarks)

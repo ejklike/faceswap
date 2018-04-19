@@ -57,7 +57,7 @@ if __name__ == '__main__':
     if args.cuda_visible_devices is not None:
         args.gpus = len(args.cuda_visible_devices.split(','))
         if args.allow_growth:
-            set_tf_allow_growth(cuda_visible_devices)
+            set_tf_allow_growth(args.cuda_visible_devices)
 
     print('Loading data, this may take a while...')
     target_image_path_dict = get_target_paths()

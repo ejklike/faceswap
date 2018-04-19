@@ -50,4 +50,4 @@ class MultiAutoEncoder(object):
 
         figure = np.clip( figure * 255, 0, 255 ).astype('uint8')
         cv2.imwrite(str(self.model_dir / '{}_{}.png'.format(target_name, epoch)), figure)
-        print('saved model images')
+        print('\rsaved model images', end='')
