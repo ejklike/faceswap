@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 from plugins.loader import PluginLoader
 from plugins.DirectoryProcessor import DirectoryProcessor
-from lib.utils import get_image_paths, get_folder
+from lib.utils import get_target_paths, get_image_paths, get_folder
 
 class ConvertProcessor(DirectoryProcessor):
     def prepare_images(self, detector):
@@ -60,7 +60,7 @@ if __name__ == '__main__':
                         type=str,
                         dest="target",
                         default='A',
-                        help="Select target. A or B (Default).")
+                        help="Select target.")
 
     parser.add_argument('-c', '--converter', ###
                         type=str,
@@ -126,11 +126,12 @@ if __name__ == '__main__':
     # Note: GAN prediction outputs a mask + an image, while other predicts only an image
     # ==> ???
     model_name = args.trainer
-    model = PluginLoader.get_model(model_name)(get_folder(args.model_dir), args.gpus)
-    if not model.load(args.target):
+    target_image_path_dict = get_target_paths()
+    model = PluginLoader.get_model(model_name)(get_folder(args.model_dir), target_image_path_dict, args.gpus)
+    if not model.load():
         print('Model Not Found! A valid model must be provided to continue!')
         exit(1)
-    
+
     conv_name = args.converter
     converter = PluginLoader.get_converter(conv_name)(
         model.converter(args.target),
