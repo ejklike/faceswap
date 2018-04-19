@@ -1,9 +1,9 @@
 import argparse
 import cv2
-
+import os
 from pathlib import Path
 from tqdm import tqdm
-import os
+
 import numpy as np
 
 from plugins.loader import PluginLoader
@@ -30,6 +30,11 @@ class ExtractProcessor(DirectoryProcessor):
                 faces = self.get_faces(detector, image)
                 process_faces = [(idx, face) for idx, face in faces]
 
+                if len(process_faces) == 0:
+                    output_file = get_folder(os.path.join(self.output_dir, 'no_face')) / Path(filename).stem
+                    cv2.imwrite('{}_{}'.format(str(output_file), Path(filename).suffix), image)
+                    continue
+                
                 for idx, face in process_faces:
                     # Draws landmarks for debug
                     if debug_landmarks is True:
