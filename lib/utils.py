@@ -43,7 +43,7 @@ def get_target_paths(data_dir='./data',
     for target in data_dir_scanned:
         if target.name[0] != '.':
             print('   - ' + target.name)
-            target_data_dir = '{}/{}/face'.format(data_dir, target.name)
+            target_data_dir = '{}/{}'.format(data_dir, target.name)
             get_folder(target_data_dir)
             # target_model_dir = '{}/{}'.format(model_dir, target.name)
             # print(get_folder(target_model_dir), target_data_dir)
