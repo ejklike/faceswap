@@ -53,10 +53,3 @@ class DirectoryProcessor(object):
         print('Images found:        {}'.format(self.images_found))
         print('Faces detected:      {}'.format(self.num_faces_detected))
         print('-------------------------')
-
-        if self.verify_output:
-            print('Note:')
-            print('Multiple faces were detected in one or more pictures.')
-            print('Double check your results.')
-            print('-------------------------')
-        print('Done!')
