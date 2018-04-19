@@ -8,7 +8,7 @@ import numpy as np
 
 from plugins.loader import PluginLoader
 from plugins.DirectoryProcessor import DirectoryProcessor
-from lib.utils import get_folder, get_image_paths
+from lib.utils import get_folder, get_image_paths, set_tf_allow_growth
 from lib.aligner import get_align_mat
 
 
@@ -70,7 +70,17 @@ if __name__ == '__main__':
                         dest="debug_landmarks",
                         default=False,
                         help="Draw landmarks for debug.")
+    
+    parser.add_argument('-ag', '--allow-growth',
+                        action="store_true",
+                        dest="allow_growth",
+                        default=False,
+                        help="Sets allow_growth option of Tensorflow to spare memory on some configs")
+
     args = parser.parse_args()
     
+    if args.allow_growth:
+        set_tf_allow_growth()
+
     extractor = ExtractProcessor(args.input_dir, args.output_dir)
     extractor.handle_images(args.detector, debug_landmarks=args.debug_landmarks)

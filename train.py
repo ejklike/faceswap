@@ -1,16 +1,7 @@
 import argparse
 
 from plugins.loader import PluginLoader
-from lib.utils import get_target_paths, get_folder
-
-
-def set_tf_allow_growth():
-    import tensorflow as tf
-    from keras.backend.tensorflow_backend import set_session
-    config = tf.ConfigProto()
-    config.gpu_options.allow_growth = True
-    config.gpu_options.visible_device_list = "0"
-    set_session(tf.Session(config=config))
+from lib.utils import get_target_paths, get_folder, set_tf_allow_growth
 
 if __name__ == '__main__':
     # TODO: swap A and B ==> from arbitrary to target

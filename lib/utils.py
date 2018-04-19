@@ -6,6 +6,14 @@ from scandir import scandir
 
 image_extensions = [".jpg", ".jpeg", ".png", ".tif", ".tiff"]
 
+def set_tf_allow_growth():
+    import tensorflow as tf
+    from keras.backend.tensorflow_backend import set_session
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    config.gpu_options.visible_device_list = "0"
+    set_session(tf.Session(config=config))
+
 
 def get_folder(path):
     output_dir = Path(path)
