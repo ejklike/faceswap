@@ -66,8 +66,9 @@ optional arguments:
 - 학습 가능한 모델들은 추가예정
   - AE
   - GAN
-  - **multiAE (AE에서 n>2로 확장한 버전)**
+  - **multiAE (AE에서 #face>2로 확장한 버전)**
   - TODO: Fast face-swap using CNN
+  - TODO: unet
 
 ```bash
 $ python train.py -t multiAE -c 0,1 -s 10 -ag -b 8 -si
@@ -107,7 +108,7 @@ optional arguments:
 3\. 원하는 사진을 입력하여 faceswap 결과를 살펴본다.
 
 ```
-$ python convert.py
+$ python convert.py -t multiAE -o ./output/trump -m ./results/default -tg trump -ag -c 2 -b 0
 ```
 
 usage statement
